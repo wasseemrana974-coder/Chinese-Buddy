@@ -1,9 +1,9 @@
 /* =========================================================
-   CHINESE BUDDY — VERSION 2
+   CHINESE BUDDY
    HSK + VOCABULARY + TESTS + LOGIN + NOTIFICATIONS
    ========================================================= */
 
-const APP_KEY = "chineseBuddy_v2";
+const STORAGE_KEY = "ChineseBuddyData";
 
 /* =========================
    MOTIVATION
@@ -12,13 +12,45 @@ const APP_KEY = "chineseBuddy_v2";
 const quotes = [
   "خذ خطوة صغيرة كل يوم لتقترب من حلمك ❤️",
   "لا تجعل الخوف من الخطأ يهدم حلمك كاملًا 🌱",
-  "خطأ واحد اليوم يعني كلمة جديدة تعلمتها غدًا ✨",
+  "خطأ واحد اليوم يعني أنك تعلمت شيئًا جديدًا ✨",
   "أنت لا تحتاج أن تكون مثاليًا، فقط استمر 💪",
-  "每一天都更好 — كل يوم تصبح أفضل 🇨🇳",
-  "学习中文，加油！ — استمر في تعلم الصينية! 🔥",
+  "كل كلمة صينية تحفظها تقربك من هدفك 🎯",
   "الاستمرارية أهم من السرعة 🚀",
-  "كل كلمة صينية تحفظها تقربك من هدفك 🎯"
+  "学习中文，加油！ 🇨🇳",
+  "مستقبلك يستحق كل خطوة تقوم بها اليوم ❤️"
 ];
+
+/* =========================
+   STATE
+========================= */
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+  loggedIn: false,
+  username: "",
+  xp: 0,
+  streak: 0,
+  lastStudyDate: "",
+  completedLessons: [],
+  review: [],
+  favorites: [],
+  testResults: [],
+  notifications: false,
+  darkMode: false
+};
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function getLevel() {
+  return Math.floor(state.xp / 500) + 1;
+}
+
+function addXP(amount) {
+  state.xp += amount;
+  saveState();
+  updateStats();
+}
 
 /* =========================
    HSK VOCABULARY
@@ -35,8 +67,6 @@ const hskVocabulary = {
     ["对不起","duìbuqǐ","آسف"],
     ["没关系","méi guānxi","لا بأس"],
     ["请","qǐng","من فضلك"],
-    ["是","shì","يكون / نعم"],
-    ["不","bù","لا / ليس"],
     ["我","wǒ","أنا"],
     ["你","nǐ","أنت"],
     ["他","tā","هو"],
@@ -48,8 +78,10 @@ const hskVocabulary = {
     ["哪儿","nǎr","أين"],
     ["这","zhè","هذا"],
     ["那","nà","ذلك"],
+    ["是","shì","يكون / نعم"],
+    ["不","bù","لا"],
     ["有","yǒu","لديه / يوجد"],
-    ["没有","méiyǒu","ليس لديه / لا يوجد"],
+    ["没有","méiyǒu","لا يوجد"],
     ["喜欢","xǐhuan","يحب"],
     ["爱","ài","يحب"],
     ["吃","chī","يأكل"],
@@ -57,17 +89,17 @@ const hskVocabulary = {
     ["水","shuǐ","ماء"],
     ["茶","chá","شاي"],
     ["咖啡","kāfēi","قهوة"],
-    ["饭","fàn","طعام / أرز"],
+    ["饭","fàn","طعام"],
     ["家","jiā","بيت / عائلة"],
     ["学校","xuéxiào","مدرسة"],
     ["学生","xuésheng","طالب"],
     ["老师","lǎoshī","معلم"],
     ["朋友","péngyou","صديق"],
     ["中文","Zhōngwén","اللغة الصينية"],
-    ["学习","xuéxí","يدرس / يتعلم"],
-    ["看","kàn","ينظر / يشاهد / يقرأ"],
+    ["学习","xuéxí","يتعلم"],
+    ["看","kàn","يشاهد / يقرأ"],
     ["听","tīng","يستمع"],
-    ["说","shuō","يتحدث / يقول"],
+    ["说","shuō","يتحدث"],
     ["去","qù","يذهب"],
     ["来","lái","يأتي"],
     ["今天","jīntiān","اليوم"],
@@ -92,9 +124,8 @@ const hskVocabulary = {
   2: [
     ["觉得","juéde","يعتقد / يشعر"],
     ["知道","zhīdao","يعرف"],
-    ["认识","rènshi","يتعرف / يعرف شخصًا"],
+    ["认识","rènshi","يعرف شخصًا"],
     ["希望","xīwàng","يأمل"],
-    ["觉得","juéde","يعتقد"],
     ["帮助","bāngzhù","يساعد"],
     ["准备","zhǔnbèi","يستعد"],
     ["开始","kāishǐ","يبدأ"],
@@ -137,8 +168,7 @@ const hskVocabulary = {
     ["一起","yìqǐ","معًا"],
     ["因为","yīnwèi","لأن"],
     ["所以","suǒyǐ","لذلك"],
-    ["但是","dànshì","لكن"],
-    ["还是","háishi","أم / لا يزال"]
+    ["但是","dànshì","لكن"]
   ],
 
   3: [
@@ -171,18 +201,18 @@ const hskVocabulary = {
     ["简单","jiǎndān","بسيط"],
     ["容易","róngyì","سهل"],
     ["困难","kùnnan","صعب"],
-    ["特别","tèbié","خاص / بشكل خاص"],
+    ["特别","tèbié","خاص"],
     ["已经","yǐjīng","بالفعل"],
     ["正在","zhèngzài","في أثناء"],
-    ["可能","kěnéng","ربما / محتمل"],
+    ["可能","kěnéng","ربما"],
     ["当然","dāngrán","بالطبع"],
     ["应该","yīnggāi","ينبغي"],
     ["需要","xūyào","يحتاج"],
     ["决定","juédìng","يقرر"],
-    ["了解","liǎojiě","يفهم / يعرف"],
+    ["了解","liǎojiě","يفهم"],
     ["发现","fāxiàn","يكتشف"],
     ["练习","liànxí","يتدرب"],
-    ["提高","tígāo","يطور / يحسن"]
+    ["提高","tígāo","يحسن"]
   ],
 
   4: [
@@ -202,7 +232,6 @@ const hskVocabulary = {
     ["选择","xuǎnzé","اختيار"],
     ["影响","yǐngxiǎng","تأثير"],
     ["改变","gǎibiàn","يغير"],
-    ["提高","tígāo","يحسن"],
     ["解决","jiějué","يحل"],
     ["保护","bǎohù","يحمي"],
     ["参加","cānjiā","يشارك"],
@@ -213,13 +242,12 @@ const hskVocabulary = {
     ["现实","xiànshí","واقع"],
     ["原因","yuányīn","سبب"],
     ["结果","jiéguǒ","نتيجة"],
-    ["情况","qíngkuàng","وضع / حالة"],
+    ["情况","qíngkuàng","حالة"],
     ["意见","yìjiàn","رأي"],
     ["建议","jiànyì","اقتراح"],
     ["解释","jiěshì","يشرح"],
     ["表达","biǎodá","يعبر"],
     ["讨论","tǎolùn","يناقش"],
-    ["决定","juédìng","يقرر"],
     ["接受","jiēshòu","يقبل"],
     ["拒绝","jùjué","يرفض"],
     ["适合","shìhé","يناسب"],
@@ -239,7 +267,7 @@ const hskVocabulary = {
     ["信息","xìnxī","معلومات"],
     ["研究","yánjiū","بحث"],
     ["资源","zīyuán","موارد"],
-    ["商业","shāngyè","تجارة / أعمال"],
+    ["商业","shāngyè","أعمال"],
     ["企业","qǐyè","مؤسسة / شركة"],
     ["市场","shìchǎng","سوق"],
     ["消费者","xiāofèizhě","مستهلك"],
@@ -254,11 +282,10 @@ const hskVocabulary = {
     ["收入","shōurù","دخل"],
     ["投资","tóuzī","استثمار"],
     ["资本","zīběn","رأس مال"],
-    ["政策","zhèngcè","سياسة / سياسة حكومية"],
+    ["政策","zhèngcè","سياسة"],
     ["法律","fǎlǜ","قانون"],
     ["权利","quánlì","حقوق"],
-    ["公平","gōngpíng","عدالة / إنصاف"],
-    ["机会","jīhuì","فرصة"],
+    ["公平","gōngpíng","إنصاف"],
     ["趋势","qūshì","اتجاه"],
     ["现代","xiàndài","حديث"],
     ["传统","chuántǒng","تقليدي"],
@@ -267,7 +294,6 @@ const hskVocabulary = {
     ["证明","zhèngmíng","يثبت"],
     ["分析","fēnxī","يحلل"],
     ["比较","bǐjiào","يقارن"],
-    ["提高","tígāo","يحسن"],
     ["实现","shíxiàn","يحقق"]
   ],
 
@@ -276,41 +302,36 @@ const hskVocabulary = {
     ["政治","zhèngzhì","سياسة"],
     ["历史","lìshǐ","تاريخ"],
     ["文学","wénxué","أدب"],
-    ["心理","xīnlǐ","علم النفس / نفسي"],
+    ["心理","xīnlǐ","علم النفس"],
     ["现象","xiànxiàng","ظاهرة"],
     ["理论","lǐlùn","نظرية"],
     ["概念","gàiniàn","مفهوم"],
     ["原则","yuánzé","مبدأ"],
     ["本质","běnzhì","جوهر"],
     ["意义","yìyì","معنى / أهمية"],
-    ["观点","guāndiǎn","وجهة نظر"],
     ["逻辑","luójí","منطق"],
     ["证据","zhèngjù","دليل"],
     ["结论","jiélùn","استنتاج"],
-    ["分析","fēnxī","تحليل"],
     ["批评","pīpíng","ينتقد"],
-    ["创造","chuàngzào","يخلق / إبداع"],
+    ["创造","chuàngzào","يخلق"],
     ["创新","chuàngxīn","ابتكار"],
     ["复杂","fùzá","معقد"],
     ["有效","yǒuxiào","فعال"],
     ["明显","míngxiǎn","واضح"],
-    ["普遍","pǔbiàn","شائع / عام"],
+    ["普遍","pǔbiàn","عام / شائع"],
     ["独立","dúlì","مستقل"],
-    ["个人","gèrén","فرد / شخصي"],
-    ["整体","zhěngtǐ","كل / إجمالي"],
+    ["个人","gèrén","شخصي"],
+    ["整体","zhěngtǐ","إجمالي"],
     ["过程","guòchéng","عملية"],
     ["条件","tiáojiàn","شرط"],
-    ["现象","xiànxiàng","ظاهرة"],
-    ["机会","jīhuì","فرصة"],
     ["挑战","tiǎozhàn","تحدي"],
     ["面对","miànduì","يواجه"],
-    ["保持","bǎochí","يحافظ على"],
+    ["保持","bǎochí","يحافظ"],
     ["避免","bìmiǎn","يتجنب"],
     ["促进","cùjìn","يعزز"],
     ["导致","dǎozhì","يؤدي إلى"],
-    ["影响","yǐngxiǎng","يؤثر"],
-    ["强调","qiángdiào","يؤكد على"],
-    ["考虑","kǎolǜ","يفكر في / يأخذ بعين الاعتبار"],
+    ["强调","qiángdiào","يؤكد"],
+    ["考虑","kǎolǜ","يأخذ بعين الاعتبار"],
     ["因此","yīncǐ","لذلك"]
   ]
 };
@@ -324,7 +345,7 @@ const lessons = [
     id: 1,
     hsk: 1,
     title: "التحية والتعارف",
-    description: "تعلم أهم الكلمات لبدء محادثة بالصينية",
+    description: "أهم العبارات لبدء محادثة",
     words: [
       ["你好","nǐ hǎo","مرحبًا"],
       ["谢谢","xièxie","شكرًا"],
@@ -338,7 +359,7 @@ const lessons = [
     id: 2,
     hsk: 1,
     title: "أنا وأنت",
-    description: "الضمائر الأساسية في الصينية",
+    description: "الضمائر الأساسية",
     words: [
       ["我","wǒ","أنا"],
       ["你","nǐ","أنت"],
@@ -352,7 +373,7 @@ const lessons = [
     id: 3,
     hsk: 1,
     title: "الأكل والشرب",
-    description: "كلمات الطعام والشراب اليومية",
+    description: "كلمات الطعام والشراب",
     words: [
       ["吃","chī","يأكل"],
       ["喝","hē","يشرب"],
@@ -366,7 +387,7 @@ const lessons = [
     id: 4,
     hsk: 1,
     title: "المدرسة والدراسة",
-    description: "مفردات الدراسة والمدرسة",
+    description: "مفردات الدراسة",
     words: [
       ["学校","xuéxiào","مدرسة"],
       ["学生","xuésheng","طالب"],
@@ -380,7 +401,7 @@ const lessons = [
     id: 5,
     hsk: 1,
     title: "الأرقام",
-    description: "الأرقام الأساسية من 1 إلى 10",
+    description: "الأرقام من 1 إلى 10",
     words: [
       ["一","yī","واحد"],
       ["二","èr","اثنان"],
@@ -397,8 +418,8 @@ const lessons = [
   {
     id: 6,
     hsk: 2,
-    title: "الوقت واليوم",
-    description: "تحدث عن الوقت وأيامك",
+    title: "الوقت",
+    description: "الوقت وأيامك",
     words: [
       ["今天","jīntiān","اليوم"],
       ["明天","míngtiān","غدًا"],
@@ -412,13 +433,13 @@ const lessons = [
     id: 7,
     hsk: 2,
     title: "المشاعر",
-    description: "عبّر عن مشاعرك بالصينية",
+    description: "التعبير عن المشاعر",
     words: [
       ["高兴","gāoxìng","سعيد"],
       ["累","lèi","متعب"],
       ["喜欢","xǐhuan","يحب"],
       ["希望","xīwàng","يأمل"],
-      ["觉得","juéde","يعتقد / يشعر"],
+      ["觉得","juéde","يشعر / يعتقد"],
       ["忙","máng","مشغول"]
     ]
   },
@@ -440,7 +461,7 @@ const lessons = [
     id: 9,
     hsk: 3,
     title: "السفر والمواصلات",
-    description: "تحدث عن السفر والتنقل",
+    description: "التنقل والسفر",
     words: [
       ["旅行","lǚxíng","سفر"],
       ["机场","jīchǎng","مطار"],
@@ -453,8 +474,8 @@ const lessons = [
   {
     id: 10,
     hsk: 3,
-    title: "الطقس",
-    description: "صف الطقس والفصول",
+    title: "الطقس والفصول",
+    description: "وصف الطقس",
     words: [
       ["天气","tiānqì","طقس"],
       ["晴","qíng","مشمس"],
@@ -467,8 +488,8 @@ const lessons = [
   {
     id: 11,
     hsk: 4,
-    title: "النجاح والفشل",
-    description: "مفردات تساعدك في الحديث عن الأهداف",
+    title: "النجاح والأهداف",
+    description: "الحديث عن النجاح والطموح",
     words: [
       ["成功","chénggōng","نجاح"],
       ["失败","shībài","فشل"],
@@ -482,7 +503,7 @@ const lessons = [
     id: 12,
     hsk: 4,
     title: "المجتمع",
-    description: "كلمات عن المجتمع والحياة",
+    description: "مفردات المجتمع والحياة",
     words: [
       ["社会","shèhuì","مجتمع"],
       ["文化","wénhuà","ثقافة"],
@@ -496,10 +517,10 @@ const lessons = [
     id: 13,
     hsk: 5,
     title: "الأعمال",
-    description: "مفردات مهمة للأعمال والشركات",
+    description: "الشركات والأعمال",
     words: [
       ["商业","shāngyè","أعمال"],
-      ["企业","qǐyè","شركة / مؤسسة"],
+      ["企业","qǐyè","شركة"],
       ["市场","shìchǎng","سوق"],
       ["产品","chǎnpǐn","منتج"],
       ["服务","fúwù","خدمة"],
@@ -510,7 +531,7 @@ const lessons = [
     id: 14,
     hsk: 5,
     title: "التكنولوجيا",
-    description: "مفردات التكنولوجيا والذكاء الاصطناعي",
+    description: "التكنولوجيا والذكاء الاصطناعي",
     words: [
       ["科技","kējì","تكنولوجيا"],
       ["科学","kēxué","علوم"],
@@ -524,7 +545,7 @@ const lessons = [
     id: 15,
     hsk: 6,
     title: "الابتكار والتفكير",
-    description: "مفردات متقدمة للمناقشات",
+    description: "مفردات متقدمة",
     words: [
       ["创新","chuàngxīn","ابتكار"],
       ["创造","chuàngzào","يخلق"],
@@ -537,119 +558,156 @@ const lessons = [
 ];
 
 /* =========================
-   STATE
+   ELEMENT HELPER
 ========================= */
 
-let state = JSON.parse(localStorage.getItem(APP_KEY)) || {
-  xp: 0,
-  streak: 0,
-  completedLessons: [],
-  review: [],
-  favorites: [],
-  testScores: [],
-  lastDate: null,
-  dailyGoal: 50,
-  todayXP: 0,
-  loggedIn: false,
-  username: "",
-  notifications: false
-};
-
-function saveState() {
-  localStorage.setItem(APP_KEY, JSON.stringify(state));
-}
-
-/* =========================
-   HELPERS
-========================= */
-
-function $(id) {
+function el(id) {
   return document.getElementById(id);
 }
 
-function randomQuote() {
-  const old = localStorage.getItem("cb_last_quote");
-  let available = quotes.filter(q => q !== old);
+/* =========================
+   MOTIVATION
+========================= */
+
+function setRandomQuote() {
+  const element = el("loadingQuote") || el("dailyMotivation");
+  if (!element) return;
+
+  const previous = localStorage.getItem("lastChineseBuddyQuote");
+
+  let available = quotes.filter(q => q !== previous);
+
+  if (available.length === 0) {
+    available = quotes;
+  }
+
   const quote = available[Math.floor(Math.random() * available.length)];
-  localStorage.setItem("cb_last_quote", quote);
-  return quote;
+
+  element.textContent = quote;
+  localStorage.setItem("lastChineseBuddyQuote", quote);
 }
 
-function levelFromXP(xp) {
-  return Math.floor(xp / 500) + 1;
-}
-
-function addXP(amount) {
-  state.xp += amount;
-  state.todayXP += amount;
-  saveState();
-  updateStats();
-}
+/* =========================
+   STATS
+========================= */
 
 function updateStats() {
-  const level = levelFromXP(state.xp);
 
-  if ($("xpValue")) $("xpValue").textContent = state.xp;
-  if ($("streakValue")) $("streakValue").textContent = state.streak;
-  if ($("levelValue")) $("levelValue").textContent = level;
+  const level = getLevel();
 
-  if ($("profileLevel")) $("profileLevel").textContent = level;
-  if ($("profileXP")) $("profileXP").textContent = state.xp;
-  if ($("completedLessons")) {
-    $("completedLessons").textContent = state.completedLessons.length;
+  if (el("xpValue")) {
+    el("xpValue").textContent = state.xp;
   }
 
-  if ($("goalProgress")) {
-    const percent = Math.min(
-      100,
-      Math.round((state.todayXP / state.dailyGoal) * 100)
-    );
-    $("goalProgress").style.width = percent + "%";
+  if (el("streakValue")) {
+    el("streakValue").textContent = state.streak;
   }
 
-  if ($("goalText")) {
-    $("goalText").textContent =
-      `${state.todayXP} / ${state.dailyGoal} XP اليوم`;
+  if (el("levelValue")) {
+    el("levelValue").textContent = level;
+  }
+
+  if (el("profileLevel")) {
+    el("profileLevel").textContent = level;
+  }
+
+  if (el("profileXP")) {
+    el("profileXP").textContent = state.xp;
+  }
+
+  if (el("completedLessons")) {
+    el("completedLessons").textContent =
+      state.completedLessons.length;
   }
 }
 
+/* =========================
+   STREAK
+========================= */
+
 function updateStreak() {
+
   const today = new Date().toDateString();
 
-  if (state.lastDate !== today) {
-    state.streak += 1;
-    state.lastDate = today;
-    state.todayXP = 0;
-    saveState();
+  if (state.lastStudyDate === today) {
+    return;
   }
+
+  if (!state.lastStudyDate) {
+    state.streak = 1;
+  } else {
+
+    const previous = new Date(state.lastStudyDate);
+    const current = new Date(today);
+
+    const difference =
+      Math.floor(
+        (current - previous) / (1000 * 60 * 60 * 24)
+      );
+
+    if (difference === 1) {
+      state.streak += 1;
+    } else if (difference > 1) {
+      state.streak = 1;
+    }
+  }
+
+  state.lastStudyDate = today;
+  saveState();
 }
 
 /* =========================
    NAVIGATION
 ========================= */
 
-function showPage(page) {
-  document.querySelectorAll(".page").forEach(p => {
-    p.style.display = "none";
+function hideAllPages() {
+
+  document.querySelectorAll(".page").forEach(page => {
+    page.style.display = "none";
   });
+}
 
-  const target = $(page + "Page");
+function showPage(pageName) {
 
-  if (target) {
-    target.style.display = "block";
+  hideAllPages();
+
+  const page = el(pageName + "Page");
+
+  if (page) {
+    page.style.display = "block";
   }
 
   document.querySelectorAll(".nav-btn").forEach(btn => {
     btn.classList.remove("active");
   });
 
-  const active = document.querySelector(`[data-page="${page}"]`);
-  if (active) active.classList.add("active");
+  const active = document.querySelector(
+    `[data-page="${pageName}"]`
+  );
 
-  if (page === "lessons") renderLessons();
-  if (page === "review") renderReview();
-  if (page === "tests") renderTests();
-  if (page === "hsk") renderHSK();
+  if (active) {
+    active.classList.add("active");
+  }
+
+  if (pageName === "home") {
+    updateStats();
+  }
+
+  if (pageName === "lessons") {
+    renderLessons();
+  }
+
+  if (pageName === "review") {
+    renderReview();
+  }
+
+  if (pageName === "tests") {
+    renderTests();
+  }
+
+  if (pageName === "hsk") {
+    renderHSK();
+  }
 }
 
 /* =========================
@@ -657,251 +715,154 @@ function showPage(page) {
 ========================= */
 
 function renderLessons() {
-  const container = $("lessonList") || $("allLessons");
+
+  const container =
+    el("lessonList") || el("allLessons");
+
   if (!container) return;
 
   container.innerHTML = lessons.map(lesson => {
-    const done = state.completedLessons.includes(lesson.id);
+
+    const completed =
+      state.completedLessons.includes(lesson.id);
 
     return `
-      <div class="lesson-card" onclick="openLesson(${lesson.id})">
+      <div class="lesson-card"
+           onclick="openLesson(${lesson.id})">
+
         <div>
-          <span class="hsk-badge">HSK ${lesson.hsk}</span>
+          <span class="hsk-badge">
+            HSK ${lesson.hsk}
+          </span>
+
           <h3>${lesson.title}</h3>
+
           <p>${lesson.description}</p>
-          <small>${lesson.words.length} كلمات</small>
+
+          <small>
+            ${lesson.words.length} كلمات
+          </small>
         </div>
-        <div class="lesson-status">
-          ${done ? "✅" : "▶️"}
+
+        <div>
+          ${completed ? "✅" : "▶️"}
         </div>
+
       </div>
     `;
+
   }).join("");
 }
 
+/* =========================
+   OPEN LESSON
+========================= */
+
 function openLesson(id) {
-  const lesson = lessons.find(x => x.id === id);
+
+  const lesson =
+    lessons.find(item => item.id === id);
+
   if (!lesson) return;
 
   showPage("lesson");
 
-  const container = $("lessonContent");
+  const container = el("lessonContent");
+
   if (!container) return;
 
   container.innerHTML = `
+
     <div class="lesson-header">
-      <span class="hsk-badge">HSK ${lesson.hsk}</span>
+
+      <span class="hsk-badge">
+        HSK ${lesson.hsk}
+      </span>
+
       <h2>${lesson.title}</h2>
+
       <p>${lesson.description}</p>
+
     </div>
 
-    <h3>📚 المفردات</h3>
+    <h3>📚 مفردات الدرس</h3>
 
     <div class="vocabulary-grid">
-      ${lesson.words.map((word, index) => `
+
+      ${lesson.words.map(word => `
+
         <div class="vocab-card">
-          <div class="hanzi">${word[0]}</div>
-          <div class="pinyin">${word[1]}</div>
-          <div class="meaning">${word[2]}</div>
+
+          <div class="hanzi">
+            ${word[0]}
+          </div>
+
+          <div class="pinyin">
+            ${word[1]}
+          </div>
+
+          <div class="meaning">
+            ${word[2]}
+          </div>
 
           <div class="vocab-actions">
-            <button onclick="speakChinese('${word[0]}')">🔊</button>
-            <button onclick="toggleFavorite('${word[0]}')">
+
+            <button
+              onclick="event.stopPropagation(); speakChinese('${word[0]}')">
+              🔊
+            </button>
+
+            <button
+              onclick="event.stopPropagation(); toggleFavorite('${word[0]}')">
               ${state.favorites.includes(word[0]) ? "⭐" : "☆"}
             </button>
+
           </div>
+
         </div>
+
       `).join("")}
+
     </div>
 
     <div class="lesson-example">
+
       <h3>💡 مثال</h3>
+
       <p>我学习中文。</p>
-      <small>Wǒ xuéxí Zhōngwén.</small>
-      <p>أنا أتعلم الصينية.</p>
-      <button onclick="speakChinese('我学习中文')">🔊 استمع</button>
+
+      <small>
+        Wǒ xuéxí Zhōngwén.
+      </small>
+
+      <p>
+        أنا أتعلم اللغة الصينية.
+      </p>
+
+      <button onclick="speakChinese('我学习中文')">
+        🔊 استمع
+      </button>
+
     </div>
 
     <div class="lesson-complete-box">
+
       <h3>📝 اختبار الدرس</h3>
-      <p>لا يمكن إكمال الدرس إلا بعد اجتياز الاختبار.</p>
-      <button class="primary-btn" onclick="startLessonQuiz(${lesson.id})">
+
+      <p>
+        لازم تجتازي الاختبار حتى يتم تسجيل الدرس كمكتمل.
+      </p>
+
+      <button
+        class="primary-btn"
+        onclick="startLessonQuiz(${lesson.id})">
+
         ابدأ الاختبار 🚀
+
       </button>
+
     </div>
   `;
-}
-
-/* =========================
-   LESSON QUIZ
-========================= */
-
-function startLessonQuiz(id) {
-  const lesson = lessons.find(x => x.id === id);
-  if (!lesson) return;
-
-  const questions = [...lesson.words]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, Math.min(5, lesson.words.length));
-
-  let current = 0;
-  let score = 0;
-
-  const container = $("lessonContent");
-
-  function showQuestion() {
-    const word = questions[current];
-
-    let options = [word[2]];
-
-    const allMeanings = Object.values(hskVocabulary)
-      .flat()
-      .map(x => x[2])
-      .filter(x => x !== word[2]);
-
-    while (options.length < 4 && allMeanings.length) {
-      const random =
-        allMeanings[Math.floor(Math.random() * allMeanings.length)];
-
-      if (!options.includes(random)) options.push(random);
-    }
-
-    options.sort(() => Math.random() - 0.5);
-
-    container.innerHTML = `
-      <div class="quiz-box">
-        <div class="quiz-progress">
-          السؤال ${current + 1} من ${questions.length}
-        </div>
-
-        <h2>ماذا تعني الكلمة؟</h2>
-
-        <div class="quiz-word">${word[0]}</div>
-        <div class="quiz-pinyin">${word[1]}</div>
-
-        <button class="listen-btn" onclick="speakChinese('${word[0]}')">
-          🔊 استمع
-        </button>
-
-        <div class="quiz-options">
-          ${options.map(option => `
-            <button onclick="answerLessonQuestion(
-              '${encodeURIComponent(option)}',
-              '${encodeURIComponent(word[2])}',
-              ${id}
-            )">
-              ${option}
-            </button>
-          `).join("")}
-        </div>
-      </div>
-    `;
-
-    window.answerLessonQuestion = function(selected, correct, lessonId) {
-      selected = decodeURIComponent(selected);
-      correct = decodeURIComponent(correct);
-
-      if (selected === correct) {
-        score++;
-        addXP(10);
-
-        container.innerHTML = `
-          <div class="success-box">
-            <div class="big-icon">✅</div>
-            <h2>إجابة صحيحة!</h2>
-            <p>ممتاز جدًا! استمري 🔥</p>
-            <button class="primary-btn" onclick="nextLessonQuestion()">
-              التالي
-            </button>
-          </div>
-        `;
-
-        window.nextLessonQuestion = function() {
-          current++;
-
-          if (current >= questions.length) {
-            finishLessonQuiz(id, score, questions.length);
-          } else {
-            showQuestion();
-          }
-        };
-
-      } else {
-        addToReview(correct);
-
-        container.innerHTML = `
-          <div class="wrong-box">
-            <div class="big-icon">💪</div>
-            <h2>مش مشكلة!</h2>
-            <p>الإجابة الصحيحة هي:</p>
-            <strong>${correct}</strong>
-            <p>أضفنا الكلمة للمراجعة 🔁</p>
-            <button class="primary-btn" onclick="nextLessonQuestion()">
-              حاول تاني
-            </button>
-          </div>
-        `;
-
-        window.nextLessonQuestion = function() {
-          current++;
-
-          if (current >= questions.length) {
-            finishLessonQuiz(id, score, questions.length);
-          } else {
-            showQuestion();
-          }
-        };
-      }
-    };
-  }
-
-  showQuestion();
-}
-
-function finishLessonQuiz(id, score, total) {
-  const passed = score >= Math.ceil(total * 0.6);
-
-  if (passed) {
-    if (!state.completedLessons.includes(id)) {
-      state.completedLessons.push(id);
-      addXP(50);
-    }
-
-    updateStreak();
-    saveState();
-
-    $("lessonContent").innerHTML = `
-      <div class="success-box">
-        <div class="big-icon">🎉</div>
-        <h2>أحسنتِ!</h2>
-        <p>اجتزتِ الاختبار بنجاح.</p>
-        <h3>${score} / ${total}</h3>
-        <p>+50 XP 🏆</p>
-
-        <button class="primary-btn" onclick="showPage('lessons')">
-          العودة للدروس
-        </button>
-      </div>
-    `;
-
-    renderLessons();
-
-  } else {
-    $("lessonContent").innerHTML = `
-      <div class="wrong-box">
-        <div class="big-icon">💪</div>
-        <h2>قريبة جدًا!</h2>
-        <p>حاولي مراجعة الكلمات ثم أعيدي الاختبار.</p>
-        <h3>${score} / ${total}</h3>
-
-        <button class="primary-btn" onclick="startLessonQuiz(${id})">
-          إعادة الاختبار 🔄
-        </button>
-      </div>
-    `;
-  }
-
-  updateStats();
 }
 
 /* =========================
@@ -909,6 +870,7 @@ function finishLessonQuiz(id, score, total) {
 ========================= */
 
 function addToReview(word) {
+
   if (!state.review.includes(word)) {
     state.review.push(word);
     saveState();
@@ -916,48 +878,90 @@ function addToReview(word) {
 }
 
 function renderReview() {
-  const container = $("reviewList");
+
+  const container = el("reviewList");
+
   if (!container) return;
 
-  if (!state.review.length) {
+  if (state.review.length === 0) {
+
     container.innerHTML = `
       <div class="empty-state">
+
         <div>🎉</div>
-        <h3>لا توجد كلمات للمراجعة</h3>
-        <p>أكمل الاختبارات وستظهر الكلمات التي تحتاج مراجعة هنا.</p>
+
+        <h3>
+          مفيش كلمات للمراجعة
+        </h3>
+
+        <p>
+          الكلمات اللي تخطئي فيها هتظهر هنا.
+        </p>
+
       </div>
     `;
+
     return;
   }
 
-  container.innerHTML = state.review.map(word => {
-    const found = Object.values(hskVocabulary)
-      .flat()
-      .find(x => x[0] === word);
+  const allWords =
+    Object.values(hskVocabulary).flat();
 
-    if (!found) return "";
+  container.innerHTML =
+    state.review.map(chinese => {
 
-    return `
-      <div class="review-card">
-        <div>
-          <strong>${found[0]}</strong>
-          <span>${found[1]}</span>
-          <small>${found[2]}</small>
+      const word =
+        allWords.find(item => item[0] === chinese);
+
+      if (!word) return "";
+
+      return `
+        <div class="review-card">
+
+          <div>
+
+            <strong>
+              ${word[0]}
+            </strong>
+
+            <span>
+              ${word[1]}
+            </span>
+
+            <small>
+              ${word[2]}
+            </small>
+
+          </div>
+
+          <div>
+
+            <button
+              onclick="speakChinese('${word[0]}')">
+              🔊
+            </button>
+
+            <button
+              onclick="removeReview('${word[0]}')">
+              ✓
+            </button>
+
+          </div>
+
         </div>
+      `;
 
-        <div>
-          <button onclick="speakChinese('${found[0]}')">🔊</button>
-          <button onclick="removeReview('${found[0]}')">✓</button>
-        </div>
-      </div>
-    `;
-  }).join("");
+    }).join("");
 }
 
 function removeReview(word) {
-  state.review = state.review.filter(x => x !== word);
+
+  state.review =
+    state.review.filter(item => item !== word);
+
   saveState();
   renderReview();
+
   addXP(5);
 }
 
@@ -966,172 +970,67 @@ function removeReview(word) {
 ========================= */
 
 function toggleFavorite(word) {
+
   if (state.favorites.includes(word)) {
-    state.favorites = state.favorites.filter(x => x !== word);
+
+    state.favorites =
+      state.favorites.filter(item => item !== word);
+
   } else {
+
     state.favorites.push(word);
+
   }
 
   saveState();
-  renderLessons();
+
+  openLesson(
+    lessons.find(l =>
+      l.words.some(w => w[0] === word)
+    )?.id || 1
+  );
 }
 
 /* =========================
-   HSK PAGE
+   LESSON QUIZ
 ========================= */
 
-function renderHSK() {
-  const container = $("hskContent");
-  if (!container) return;
+function startLessonQuiz(id) {
 
-  container.innerHTML = [1,2,3,4,5,6].map(level => {
-    const count = hskVocabulary[level].length;
+  const lesson =
+    lessons.find(item => item.id === id);
 
-    return `
-      <div class="hsk-card" onclick="showHSKWords(${level})">
-        <div class="hsk-number">HSK ${level}</div>
-        <div>
-          <h3>المستوى ${level}</h3>
-          <p>${count} كلمة متاحة حاليًا</p>
-        </div>
-        <span>›</span>
-      </div>
-    `;
-  }).join("");
-}
+  if (!lesson) return;
 
-function showHSKWords(level) {
-  const words = hskVocabulary[level];
+  const questions =
+    [...lesson.words]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, Math.min(5, lesson.words.length));
 
-  const container = $("hskContent");
-
-  container.innerHTML = `
-    <button class="back-btn" onclick="renderHSK()">← رجوع</button>
-
-    <h2>HSK ${level}</h2>
-    <p>مفردات المستوى</p>
-
-    <div class="vocabulary-grid">
-      ${words.map(word => `
-        <div class="vocab-card">
-          <div class="hanzi">${word[0]}</div>
-          <div class="pinyin">${word[1]}</div>
-          <div class="meaning">${word[2]}</div>
-          <button onclick="speakChinese('${word[0]}')">🔊</button>
-        </div>
-      `).join("")}
-    </div>
-  `;
-}
-
-/* =========================
-   TESTS
-========================= */
-
-function renderTests() {
-  const container = $("testsContent");
-  if (!container) return;
-
-  container.innerHTML = `
-    <div class="tests-header">
-      <span class="hsk-badge">اختبارات</span>
-      <h2>اختبر مستواك 🧠</h2>
-      <p>اختبارات منفصلة بعيدًا عن الدروس.</p>
-    </div>
-
-    <div class="test-card" onclick="startGeneralTest(1)">
-      <div class="test-icon">🇨🇳</div>
-      <div>
-        <h3>اختبار HSK 1</h3>
-        <p>10 أسئلة للمبتدئين</p>
-      </div>
-    </div>
-
-    <div class="test-card" onclick="startGeneralTest(2)">
-      <div class="test-icon">📚</div>
-      <div>
-        <h3>اختبار HSK 2</h3>
-        <p>10 أسئلة</p>
-      </div>
-    </div>
-
-    <div class="test-card" onclick="startGeneralTest(3)">
-      <div class="test-icon">🔥</div>
-      <div>
-        <h3>اختبار HSK 3</h3>
-        <p>10 أسئلة</p>
-      </div>
-    </div>
-
-    <div class="test-card" onclick="startGeneralTest(4)">
-      <div class="test-icon">🎯</div>
-      <div>
-        <h3>اختبار HSK 4</h3>
-        <p>10 أسئلة</p>
-      </div>
-    </div>
-
-    <div class="test-card" onclick="startGeneralTest(5)">
-      <div class="test-icon">🚀</div>
-      <div>
-        <h3>اختبار HSK 5</h3>
-        <p>10 أسئلة</p>
-      </div>
-    </div>
-
-    <div class="test-card" onclick="startGeneralTest(6)">
-      <div class="test-icon">👑</div>
-      <div>
-        <h3>اختبار HSK 6</h3>
-        <p>10 أسئلة متقدمة</p>
-      </div>
-    </div>
-
-    <div class="test-card" onclick="startMixedTest()">
-      <div class="test-icon">🎲</div>
-      <div>
-        <h3>اختبار عشوائي</h3>
-        <p>أسئلة من مستويات مختلفة</p>
-      </div>
-    </div>
-  `;
-}
-
-function startGeneralTest(level) {
-  const words = [...hskVocabulary[level]]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 10);
-
-  runTest(words, `HSK ${level}`);
-}
-
-function startMixedTest() {
-  const words = Object.values(hskVocabulary)
-    .flat()
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 10);
-
-  runTest(words, "اختبار عشوائي");
-}
-
-function runTest(words, title) {
-  let current = 0;
+  let currentQuestion = 0;
   let score = 0;
 
-  const container = $("testsContent");
+  const container = el("lessonContent");
 
-  function question() {
-    const word = words[current];
+  function showQuestion() {
+
+    const word =
+      questions[currentQuestion];
+
+    const allMeanings =
+      Object.values(hskVocabulary)
+        .flat()
+        .map(item => item[2])
+        .filter(m => m !== word[2]);
 
     let options = [word[2]];
 
-    const pool = Object.values(hskVocabulary)
-      .flat()
-      .map(x => x[2])
-      .filter(x => x !== word[2]);
-
     while (options.length < 4) {
-      const random = pool[Math.floor(Math.random() * pool.length)];
+
+      const random =
+        allMeanings[
+          Math.floor(Math.random() * allMeanings.length)
+        ];
 
       if (!options.includes(random)) {
         options.push(random);
@@ -1141,107 +1040,688 @@ function runTest(words, title) {
     options.sort(() => Math.random() - 0.5);
 
     container.innerHTML = `
+
       <div class="quiz-box">
+
         <div class="quiz-progress">
-          ${title} — ${current + 1} / ${words.length}
+          السؤال ${currentQuestion + 1}
+          من ${questions.length}
         </div>
 
-        <h2>اختر المعنى الصحيح</h2>
+        <h2>
+          ماذا تعني هذه الكلمة؟
+        </h2>
 
-        <div class="quiz-word">${word[0]}</div>
-        <div class="quiz-pinyin">${word[1]}</div>
+        <div class="quiz-word">
+          ${word[0]}
+        </div>
 
-        <button class="listen-btn"
+        <div class="quiz-pinyin">
+          ${word[1]}
+        </div>
+
+        <button
+          class="listen-btn"
           onclick="speakChinese('${word[0]}')">
-          🔊 استماع
+          🔊 استمع
         </button>
 
         <div class="quiz-options">
+
           ${options.map(option => `
-            <button class="test-option"
+
+            <button
+              class="quiz-answer"
               data-answer="${encodeURIComponent(option)}">
+
               ${option}
+
             </button>
+
           `).join("")}
+
         </div>
+
       </div>
     `;
 
-    document.querySelectorAll(".test-option").forEach(btn => {
-      btn.onclick = () => {
-        const answer = decodeURIComponent(btn.dataset.answer);
+    document
+      .querySelectorAll(".quiz-answer")
+      .forEach(button => {
 
-        if (answer === word[2]) {
-          score++;
-          addXP(10);
-          btn.classList.add("correct");
-        } else {
-          btn.classList.add("wrong");
-          addToReview(word[0]);
-        }
+        button.onclick = () => {
 
-        document.querySelectorAll(".test-option")
-          .forEach(b => b.disabled = true);
+          const answer =
+            decodeURIComponent(
+              button.dataset.answer
+            );
 
-        setTimeout(() => {
-          current++;
+          document
+            .querySelectorAll(".quiz-answer")
+            .forEach(btn => {
+              btn.disabled = true;
+            });
 
-          if (current >= words.length) {
-            finishGeneralTest(score, words.length, title);
+          if (answer === word[2]) {
+
+            score++;
+            button.classList.add("correct");
+
           } else {
-            question();
+
+            button.classList.add("wrong");
+            addToReview(word[0]);
+
+            document
+              .querySelectorAll(".quiz-answer")
+              .forEach(btn => {
+
+                if (
+                  decodeURIComponent(
+                    btn.dataset.answer
+                  ) === word[2]
+                ) {
+                  btn.classList.add("correct");
+                }
+
+              });
           }
-        }, 700);
-      };
-    });
+
+          setTimeout(() => {
+
+            currentQuestion++;
+
+            if (
+              currentQuestion >= questions.length
+            ) {
+
+              finishLessonQuiz(
+                id,
+                score,
+                questions.length
+              );
+
+            } else {
+
+              showQuestion();
+
+            }
+
+          }, 700);
+        };
+      });
   }
 
-  question();
+  showQuestion();
 }
 
-function finishGeneralTest(score, total, title) {
-  const percentage = Math.round((score / total) * 100);
+/* =========================
+   FINISH LESSON QUIZ
+========================= */
 
-  state.testScores.push({
-    title,
-    score,
-    total,
+function finishLessonQuiz(id, score, total) {
+
+  const passed =
+    score >= Math.ceil(total * 0.6);
+
+  const container =
+    el("lessonContent");
+
+  if (passed) {
+
+    if (!state.completedLessons.includes(id)) {
+
+      state.completedLessons.push(id);
+      addXP(50);
+
+    }
+
+    updateStreak();
+    saveState();
+
+    container.innerHTML = `
+
+      <div class="success-box">
+
+        <div class="big-icon">
+          🎉
+        </div>
+
+        <h2>
+          أحسنتِ!
+        </h2>
+
+        <p>
+          اجتزتِ الاختبار بنجاح.
+        </p>
+
+        <h3>
+          ${score} / ${total}
+        </h3>
+
+        <p>
+          +50 XP 🏆
+        </p>
+
+        <button
+          class="primary-btn"
+          onclick="showPage('lessons')">
+
+          العودة للدروس
+
+        </button>
+
+      </div>
+    `;
+
+  } else {
+
+    container.innerHTML = `
+
+      <div class="wrong-box">
+
+        <div class="big-icon">
+          💪
+        </div>
+
+        <h2>
+          قريبة جدًا!
+        </h2>
+
+        <p>
+          راجعي الكلمات وحاولي مرة أخرى.
+        </p>
+
+        <h3>
+          ${score} / ${total}
+        </h3>
+
+        <button
+          class="primary-btn"
+          onclick="startLessonQuiz(${id})">
+
+          إعادة الاختبار 🔄
+
+        </button>
+
+      </div>
+    `;
+  }
+
+  updateStats();
+  renderLessons();
+}
+
+/* =========================
+   HSK PAGE
+========================= */
+
+function renderHSK() {
+
+  const container = el("hskContent");
+
+  if (!container) return;
+
+  container.innerHTML = `
+
+    <div class="tests-header">
+
+      <span class="hsk-badge">
+        HSK
+      </span>
+
+      <h2>
+        مستويات اللغة الصينية 🇨🇳
+      </h2>
+
+      <p>
+        اختاري المستوى لمشاهدة مفرداته.
+      </p>
+
+    </div>
+
+    ${[1,2,3,4,5,6].map(level => `
+
+      <div
+        class="hsk-card"
+        onclick="showHSKWords(${level})">
+
+        <div class="hsk-number">
+          ${level}
+        </div>
+
+        <div>
+
+          <h3>
+            HSK ${level}
+          </h3>
+
+          <p>
+            ${hskVocabulary[level].length}
+            كلمة متاحة حاليًا
+          </p>
+
+        </div>
+
+        <span>
+          ›
+        </span>
+
+      </div>
+
+    `).join("")}
+  `;
+}
+
+function showHSKWords(level) {
+
+  const container = el("hskContent");
+
+  const words =
+    hskVocabulary[level];
+
+  container.innerHTML = `
+
+    <button
+      class="back-btn"
+      onclick="renderHSK()">
+
+      ← رجوع
+
+    </button>
+
+    <div class="tests-header">
+
+      <span class="hsk-badge">
+        HSK ${level}
+      </span>
+
+      <h2>
+        مفردات المستوى ${level}
+      </h2>
+
+    </div>
+
+    <div class="vocabulary-grid">
+
+      ${words.map(word => `
+
+        <div class="vocab-card">
+
+          <div class="hanzi">
+            ${word[0]}
+          </div>
+
+          <div class="pinyin">
+            ${word[1]}
+          </div>
+
+          <div class="meaning">
+            ${word[2]}
+          </div>
+
+          <button
+            onclick="speakChinese('${word[0]}')">
+
+            🔊
+
+          </button>
+
+        </div>
+
+      `).join("")}
+
+    </div>
+  `;
+}
+
+/* =========================
+   TESTS PAGE
+========================= */
+
+function renderTests() {
+
+  const container = el("testsContent");
+
+  if (!container) return;
+
+  container.innerHTML = `
+
+    <div class="tests-header">
+
+      <span class="hsk-badge">
+        📝 TESTS
+      </span>
+
+      <h2>
+        اختبر معلوماتك 🧠
+      </h2>
+
+      <p>
+        اختبارات منفصلة عن الدروس.
+      </p>
+
+    </div>
+
+    ${[1,2,3,4,5,6].map(level => `
+
+      <div
+        class="test-card"
+        onclick="startGeneralTest(${level})">
+
+        <div class="test-icon">
+          ${level <= 2 ? "🌱" :
+            level <= 4 ? "🔥" : "👑"}
+        </div>
+
+        <div>
+
+          <h3>
+            اختبار HSK ${level}
+          </h3>
+
+          <p>
+            10 أسئلة
+          </p>
+
+        </div>
+
+      </div>
+
+    `).join("")}
+
+    <div
+      class="test-card"
+      onclick="startMixedTest()">
+
+      <div class="test-icon">
+        🎲
+      </div>
+
+      <div>
+
+        <h3>
+          اختبار عشوائي
+        </h3>
+
+        <p>
+          كلمات من مستويات مختلفة
+        </p>
+
+      </div>
+
+    </div>
+  `;
+}
+
+/* =========================
+   GENERAL TEST
+========================= */
+
+function startGeneralTest(level) {
+
+  const words =
+    [...hskVocabulary[level]]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 10);
+
+  runTest(
+    words,
+    `اختبار HSK ${level}`
+  );
+}
+
+function startMixedTest() {
+
+  const words =
+    Object.values(hskVocabulary)
+      .flat()
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 10);
+
+  runTest(
+    words,
+    "اختبار عشوائي"
+  );
+}
+
+function runTest(words, title) {
+
+  let current = 0;
+  let score = 0;
+
+  const container =
+    el("testsContent");
+
+  function showQuestion() {
+
+    const word =
+      words[current];
+
+    const pool =
+      Object.values(hskVocabulary)
+        .flat()
+        .map(item => item[2])
+        .filter(m => m !== word[2]);
+
+    let options = [word[2]];
+
+    while (options.length < 4) {
+
+      const random =
+        pool[Math.floor(Math.random() * pool.length)];
+
+      if (!options.includes(random)) {
+        options.push(random);
+      }
+    }
+
+    options.sort(() => Math.random() - 0.5);
+
+    container.innerHTML = `
+
+      <div class="quiz-box">
+
+        <div class="quiz-progress">
+          ${title}
+          — ${current + 1} / ${words.length}
+        </div>
+
+        <h2>
+          اختر المعنى الصحيح
+        </h2>
+
+        <div class="quiz-word">
+          ${word[0]}
+        </div>
+
+        <div class="quiz-pinyin">
+          ${word[1]}
+        </div>
+
+        <button
+          class="listen-btn"
+          onclick="speakChinese('${word[0]}')">
+
+          🔊 استماع
+
+        </button>
+
+        <div class="quiz-options">
+
+          ${options.map(option => `
+
+            <button
+              class="quiz-answer"
+              data-answer="${encodeURIComponent(option)}">
+
+              ${option}
+
+            </button>
+
+          `).join("")}
+
+        </div>
+
+      </div>
+    `;
+
+    document
+      .querySelectorAll(".quiz-answer")
+      .forEach(button => {
+
+        button.onclick = () => {
+
+          const answer =
+            decodeURIComponent(
+              button.dataset.answer
+            );
+
+          document
+            .querySelectorAll(".quiz-answer")
+            .forEach(btn => {
+              btn.disabled = true;
+            });
+
+          if (answer === word[2]) {
+
+            score++;
+            addXP(10);
+            button.classList.add("correct");
+
+          } else {
+
+            button.classList.add("wrong");
+            addToReview(word[0]);
+
+            document
+              .querySelectorAll(".quiz-answer")
+              .forEach(btn => {
+
+                if (
+                  decodeURIComponent(
+                    btn.dataset.answer
+                  ) === word[2]
+                ) {
+                  btn.classList.add("correct");
+                }
+
+              });
+          }
+
+          setTimeout(() => {
+
+            current++;
+
+            if (current >= words.length) {
+
+              finishGeneralTest(
+                title,
+                score,
+                words.length
+              );
+
+            } else {
+
+              showQuestion();
+
+            }
+
+          }, 700);
+        };
+      });
+  }
+
+  showQuestion();
+}
+
+/* =========================
+   TEST RESULT
+========================= */
+
+function finishGeneralTest(
+  title,
+  score,
+  total
+) {
+
+  const percentage =
+    Math.round((score / total) * 100);
+
+  state.testResults.push({
+    title: title,
+    score: score,
+    total: total,
+    percentage: percentage,
     date: new Date().toISOString()
   });
 
-  saveState();
   updateStreak();
+  saveState();
 
-  $("testsContent").innerHTML = `
+  const container =
+    el("testsContent");
+
+  container.innerHTML = `
+
     <div class="success-box">
+
       <div class="big-icon">
-        ${percentage >= 80 ? "🏆" : percentage >= 60 ? "🎉" : "💪"}
+
+        ${
+          percentage >= 80
+            ? "🏆"
+            : percentage >= 60
+            ? "🎉"
+            : "💪"
+        }
+
       </div>
 
-      <h2>انتهى الاختبار!</h2>
+      <h2>
+        انتهى الاختبار!
+      </h2>
 
-      <p>${title}</p>
+      <p>
+        ${title}
+      </p>
 
       <div class="test-result">
-        <strong>${score} / ${total}</strong>
-        <span>${percentage}%</span>
+
+        <strong>
+          ${score} / ${total}
+        </strong>
+
+        <span>
+          ${percentage}%
+        </span>
+
       </div>
 
       <p>
+
         ${
           percentage >= 80
-            ? "ممتاز! مستواك رائع 🔥"
+            ? "ممتاز جدًا! 🔥"
             : percentage >= 60
-            ? "جيد جدًا! استمري في التدريب 🌱"
-            : "مفيش مشكلة، المراجعة هتساعدك تتحسني ❤️"
+            ? "جيد جدًا! استمري 🌱"
+            : "راجعي الكلمات وحاولي مرة أخرى ❤️"
         }
+
       </p>
 
-      <button class="primary-btn" onclick="renderTests()">
+      <button
+        class="primary-btn"
+        onclick="renderTests()">
+
         العودة للاختبارات
+
       </button>
+
     </div>
   `;
+
+  updateStats();
 }
 
 /* =========================
@@ -1249,67 +1729,110 @@ function finishGeneralTest(score, total, title) {
 ========================= */
 
 function speakChinese(text) {
+
   if (!("speechSynthesis" in window)) {
-    alert("متصفحك لا يدعم النطق الصوتي.");
+
+    alert(
+      "المتصفح لا يدعم النطق الصوتي."
+    );
+
     return;
   }
 
-  const utterance = new SpeechSynthesisUtterance(text);
+  const utterance =
+    new SpeechSynthesisUtterance(text);
+
   utterance.lang = "zh-CN";
   utterance.rate = 0.8;
 
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utterance);
+  window.speechSynthesis.cancel();
+
+  window.speechSynthesis.speak(
+    utterance
+  );
 }
 
 /* =========================
    LOGIN
 ========================= */
 
-function setupLogin() {
+function createLoginScreen() {
+
   if (state.loggedIn) return;
 
-  const overlay = document.createElement("div");
+  if (el("loginOverlay")) return;
+
+  const overlay =
+    document.createElement("div");
+
   overlay.id = "loginOverlay";
 
   overlay.innerHTML = `
+
     <div class="login-box">
-      <div class="login-logo">中</div>
 
-      <h2>مرحبًا بك في Chinese Buddy 🇨🇳</h2>
-      <p>أنشئي حسابك واحفظي تقدمك على هذا الجهاز.</p>
+      <div class="login-logo">
+        中
+      </div>
 
-      <input id="loginName"
+      <h2>
+        أهلاً بك في Chinese Buddy 🇨🇳
+      </h2>
+
+      <p>
+        أنشئي حسابك وابدئي رحلة تعلم الصينية.
+      </p>
+
+      <input
+        id="loginName"
         type="text"
         placeholder="اسم المستخدم">
 
-      <input id="loginEmail"
+      <input
+        id="loginEmail"
         type="email"
         placeholder="البريد الإلكتروني">
 
-      <input id="loginPassword"
+      <input
+        id="loginPassword"
         type="password"
         placeholder="كلمة المرور">
 
-      <button id="loginBtn" class="primary-btn">
+      <button
+        id="loginBtn"
+        class="primary-btn">
+
         إنشاء الحساب / تسجيل الدخول
+
       </button>
 
       <small>
-        النسخة الحالية تحفظ الحساب محليًا على هذا الجهاز.
+        النسخة الحالية تحفظ بيانات الدخول
+        والتقدم على هذا الجهاز فقط.
       </small>
+
     </div>
   `;
 
   document.body.appendChild(overlay);
 
-  $("loginBtn").onclick = () => {
-    const name = $("loginName").value.trim();
-    const email = $("loginEmail").value.trim();
-    const password = $("loginPassword").value;
+  el("loginBtn").onclick = () => {
+
+    const name =
+      el("loginName").value.trim();
+
+    const email =
+      el("loginEmail").value.trim();
+
+    const password =
+      el("loginPassword").value;
 
     if (!name || !email || !password) {
-      alert("من فضلك املئي البيانات كلها.");
+
+      alert(
+        "من فضلك املئي البيانات كلها."
+      );
+
       return;
     }
 
@@ -1317,16 +1840,13 @@ function setupLogin() {
     state.username = name;
 
     saveState();
+
     overlay.remove();
 
-    showWelcomeMessage();
-  };
-}
+    showPage("home");
 
-function showWelcomeMessage() {
-  setTimeout(() => {
-    alert(`أهلًا ${state.username} ❤️ جاهزة نبدأ رحلة الصينية؟ 🇨🇳`);
-  }, 300);
+    updateStats();
+  };
 }
 
 /* =========================
@@ -1334,66 +1854,85 @@ function showWelcomeMessage() {
 ========================= */
 
 async function requestNotifications() {
+
   if (!("Notification" in window)) {
-    alert("المتصفح لا يدعم الإشعارات.");
+
+    alert(
+      "المتصفح لا يدعم الإشعارات."
+    );
+
     return;
   }
 
   if (Notification.permission === "granted") {
+
     state.notifications = true;
     saveState();
+
+    alert(
+      "الإشعارات مفعلة بالفعل 🔔"
+    );
+
     return;
   }
 
   if (Notification.permission === "denied") {
-    alert("الإشعارات مرفوضة من إعدادات المتصفح.");
+
+    alert(
+      "الإشعارات مرفوضة من إعدادات المتصفح."
+    );
+
     return;
   }
 
-  const permission = await Notification.requestPermission();
+  const permission =
+    await Notification.requestPermission();
 
   if (permission === "granted") {
+
     state.notifications = true;
+
     saveState();
 
-    new Notification("Chinese Buddy 🇨🇳", {
-      body: "ممتاز! سنذكرك بالاستمرار في تعلم الصينية 🔥"
-    });
+    new Notification(
+      "Chinese Buddy 🇨🇳",
+      {
+        body:
+          "ممتاز! تم تفعيل الإشعارات 🔔"
+      }
+    );
+
+  } else {
+
+    alert(
+      "لم يتم تفعيل الإشعارات."
+    );
   }
 }
 
-/* =========================
-   ADD NOTIFICATION BUTTON
-========================= */
+function createNotificationButton() {
 
-function addNotificationButton() {
-  if (document.getElementById("notificationBtn")) return;
+  if (el("notificationBtn")) return;
 
-  const btn = document.createElement("button");
-  btn.id = "notificationBtn";
-  btn.className = "notification-floating";
-  btn.innerHTML = "🔔";
-  btn.title = "تفعيل الإشعارات";
+  const button =
+    document.createElement("button");
 
-  btn.onclick = requestNotifications;
+  button.id =
+    "notificationBtn";
 
-  document.body.appendChild(btn);
-}
+  button.className =
+    "notification-floating";
 
-/* =========================
-   LANGUAGE
-========================= */
+  button.textContent =
+    "🔔";
 
-function setupLanguage() {
-  const btn = $("langBtn");
+  button.title =
+    "تفعيل الإشعارات";
 
-  if (!btn) return;
+  button.onclick =
+    requestNotifications;
 
-  btn.onclick = () => {
-    alert(
-      "تبديل العربية والإنجليزية سيكون في التحديث القادم مع ترجمة واجهة التطبيق بالكامل."
-    );
-  };
+  document.body.appendChild(button);
 }
 
 /* =========================
@@ -1401,117 +1940,175 @@ function setupLanguage() {
 ========================= */
 
 function setupTheme() {
-  const btn = $("themeBtn");
 
-  if (!btn) return;
-
-  const savedTheme = localStorage.getItem("cb_theme");
-
-  if (savedTheme === "dark") {
+  if (state.darkMode) {
     document.body.classList.add("dark");
   }
 
-  btn.onclick = () => {
-    document.body.classList.toggle("dark");
+  const button =
+    el("themeBtn");
 
-    localStorage.setItem(
-      "cb_theme",
-      document.body.classList.contains("dark")
-        ? "dark"
-        : "light"
+  if (!button) return;
+
+  button.onclick = () => {
+
+    state.darkMode =
+      !document.body.classList.contains("dark");
+
+    document.body.classList.toggle(
+      "dark",
+      state.darkMode
+    );
+
+    saveState();
+  };
+}
+
+/* =========================
+   LANGUAGE BUTTON
+========================= */
+
+function setupLanguage() {
+
+  const button =
+    el("langBtn");
+
+  if (!button) return;
+
+  button.onclick = () => {
+
+    alert(
+      "ترجمة الواجهة عربي / English ستكون في مرحلة تطوير الواجهة القادمة."
     );
   };
 }
 
 /* =========================
-   DYNAMIC PAGES
+   CREATE HSK PAGE
 ========================= */
 
-function createExtraPages() {
+function createHSKPage() {
 
-  if (!$("testsPage")) {
-    const page = document.createElement("section");
+  if (el("hskPage")) return;
 
-    page.id = "testsPage";
-    page.className = "page";
-    page.style.display = "none";
+  const page =
+    document.createElement("section");
 
-    page.innerHTML = `
-      <div id="testsContent"></div>
-    `;
+  page.id =
+    "hskPage";
 
-    document.querySelector("main")?.appendChild(page);
-  }
+  page.className =
+    "page";
 
-  if (!$("hskPage")) {
-    const page = document.createElement("section");
+  page.style.display =
+    "none";
 
-    page.id = "hskPage";
-    page.className = "page";
-    page.style.display = "none";
+  page.innerHTML = `
+    <div id="hskContent"></div>
+  `;
 
-    page.innerHTML = `
-      <div id="hskContent"></div>
-    `;
+  const main =
+    document.querySelector("main");
 
-    document.querySelector("main")?.appendChild(page);
+  if (main) {
+    main.appendChild(page);
   }
 }
 
 /* =========================
-   ADD NAVIGATION
+   CREATE TEST PAGE
 ========================= */
 
-function addExtraNavigation() {
+function createTestsPage() {
 
-  const nav = document.querySelector(".bottom-nav");
+  if (el("testsPage")) return;
+
+  const page =
+    document.createElement("section");
+
+  page.id =
+    "testsPage";
+
+  page.className =
+    "page";
+
+  page.style.display =
+    "none";
+
+  page.innerHTML = `
+    <div id="testsContent"></div>
+  `;
+
+  const main =
+    document.querySelector("main");
+
+  if (main) {
+    main.appendChild(page);
+  }
+}
+
+/* =========================
+   ADD NAV BUTTONS
+========================= */
+
+function addNavigationButtons() {
+
+  const nav =
+    document.querySelector(".bottom-nav");
 
   if (!nav) return;
 
-  if (!nav.querySelector('[data-page="tests"]')) {
-    const btn = document.createElement("button");
+  if (
+    !nav.querySelector(
+      '[data-page="tests"]'
+    )
+  ) {
 
-    btn.className = "nav-btn";
-    btn.dataset.page = "tests";
+    const button =
+      document.createElement("button");
 
-    btn.innerHTML = `
+    button.className =
+      "nav-btn";
+
+    button.dataset.page =
+      "tests";
+
+    button.innerHTML = `
       <span>📝</span>
       <small>اختبارات</small>
     `;
 
-    btn.onclick = () => showPage("tests");
+    button.onclick =
+      () => showPage("tests");
 
-    nav.appendChild(btn);
+    nav.appendChild(button);
   }
 
-  if (!nav.querySelector('[data-page="hsk"]')) {
-    const btn = document.createElement("button");
+  if (
+    !nav.querySelector(
+      '[data-page="hsk"]'
+    )
+  ) {
 
-    btn.className = "nav-btn";
-    btn.dataset.page = "hsk";
+    const button =
+      document.createElement("button");
 
-    btn.innerHTML = `
+    button.className =
+      "nav-btn";
+
+    button.dataset.page =
+      "hsk";
+
+    button.innerHTML = `
       <span>🇨🇳</span>
       <small>HSK</small>
     `;
 
-    btn.onclick = () => showPage("hsk");
+    button.onclick =
+      () => showPage("hsk");
 
-    nav.appendChild(btn);
+    nav.appendChild(button);
   }
-}
-
-/* =========================
-   HOME
-========================= */
-
-function updateHome() {
-
-  if ($("dailyMotivation")) {
-    $("dailyMotivation").textContent = randomQuote();
-  }
-
-  updateStats();
 }
 
 /* =========================
@@ -1520,11 +2117,26 @@ function updateHome() {
 
 function startApp() {
 
-  createExtraPages();
-  addExtraNavigation();
+  /*
+     مهم جدًا:
+     لا نخفي التطبيق بعد تسجيل الدخول.
+  */
 
-  updateStreak();
-  updateHome();
+  const app =
+    el("app");
+
+  if (app) {
+    app.style.display = "block";
+    app.style.visibility = "visible";
+    app.style.opacity = "1";
+  }
+
+  createHSKPage();
+  createTestsPage();
+
+  addNavigationButtons();
+
+  updateStats();
   renderLessons();
   renderReview();
   renderTests();
@@ -1533,36 +2145,41 @@ function startApp() {
   setupTheme();
   setupLanguage();
 
-  addNotificationButton();
+  createNotificationButton();
 
   if (!state.loggedIn) {
-    setupLogin();
+    createLoginScreen();
+  } else {
+    showPage("home");
   }
 }
 
 /* =========================
-   LOADING SCREEN
+   APP START
 ========================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
 
-  const loadingScreen = $("loadingScreen");
+    setRandomQuote();
 
-  if ($("loadingQuote")) {
-    $("loadingQuote").textContent = randomQuote();
+    const loading =
+      el("loadingScreen");
+
+    setTimeout(() => {
+
+      if (loading) {
+
+        loading.style.opacity = "0";
+
+        setTimeout(() => {
+          loading.style.display = "none";
+        }, 400);
+      }
+
+      startApp();
+
+    }, 1200);
   }
-
-  setTimeout(() => {
-
-    if (loadingScreen) {
-      loadingScreen.style.opacity = "0";
-
-      setTimeout(() => {
-        loadingScreen.style.display = "none";
-      }, 400);
-    }
-
-    startApp();
-
-  }, 1200);
-});
+);
