@@ -1,214 +1,678 @@
-<!DOCTYPE html>
+ح<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Chinese Buddy 🇨🇳</title>
+
+  <meta name="theme-color" content="#d91c2b">
+  <meta name="description" content="Chinese Buddy - تعلم اللغة الصينية بطريقة ممتعة">
+
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- شاشة التحميل -->
+  <!-- =========================
+       شاشة التحميل
+  ========================== -->
   <div id="loadingScreen" class="loading-screen">
-    <div class="logo">中</div>
+
+    <div class="loading-logo">中</div>
+
     <h1>Chinese Buddy</h1>
-    <p id="loadingQuote">خذ خطوة صغيرة لتقربك أكثر ❤️</p>
+
+    <p id="loadingQuote">
+      خذ خطوة صغيرة لتقربك أكثر ❤️
+    </p>
+
     <div class="loader"></div>
+
   </div>
 
-  <!-- التطبيق -->
+
+  <!-- =========================
+       التطبيق
+  ========================== -->
   <div id="app" class="app hidden">
 
+    <!-- HEADER -->
     <header class="top-bar">
-      <div>
-        <small>你好 👋</small>
+
+      <div class="brand-area">
+        <small id="helloText">你好 👋</small>
         <h2>Chinese Buddy</h2>
       </div>
 
       <div class="top-actions">
-        <button id="themeBtn">🌙</button>
-        <button id="langBtn">EN</button>
+
+        <button
+          id="themeBtn"
+          class="icon-btn"
+          type="button"
+          aria-label="تغيير المظهر">
+          🌙
+        </button>
+
+        <button
+          id="langBtn"
+          class="language-btn"
+          type="button">
+          EN
+        </button>
+
       </div>
+
     </header>
 
-    <main>
 
-      <!-- الرئيسية -->
+    <!-- =========================
+         المحتوى الرئيسي
+    ========================== -->
+
+    <main id="mainContent">
+
+
+      <!-- =====================
+           HOME
+      ====================== -->
+
       <section id="homePage" class="page active">
 
         <div class="welcome-card">
+
           <div>
-            <span>رحلتك في الصينية 🇨🇳</span>
-            <h1>استمر، أنت تتقدم! 🔥</h1>
-            <p id="dailyMotivation"></p>
+
+            <span id="journeyText">
+              رحلتك في الصينية 🇨🇳
+            </span>
+
+            <h1 id="welcomeTitle">
+              استمر، أنت تتقدم! 🔥
+            </h1>
+
+            <p id="dailyMotivation">
+              كل كلمة جديدة تقربك من هدفك.
+            </p>
+
           </div>
+
         </div>
+
+
+        <!-- الإحصائيات -->
 
         <div class="stats">
+
           <div class="stat-card">
+
             <strong id="xpValue">0</strong>
+
             <span>XP</span>
+
           </div>
 
+
           <div class="stat-card">
+
             <strong id="streakValue">0</strong>
+
             <span>يوم 🔥</span>
+
           </div>
 
+
           <div class="stat-card">
+
             <strong id="levelValue">1</strong>
+
             <span>المستوى</span>
+
           </div>
+
         </div>
 
-        <h3>هدف اليوم 🎯</h3>
+
+        <!-- هدف اليوم -->
+
+        <h3 id="dailyGoalTitle">
+          هدف اليوم 🎯
+        </h3>
 
         <div class="goal-card">
+
           <div class="progress-circle">
-            <span id="goalProgress">0%</span>
+
+            <span id="goalProgress">
+              0%
+            </span>
+
           </div>
 
           <div>
-            <h3>تعلم اليوم</h3>
-            <p id="goalText">أكمل أول درس لك اليوم</p>
+
+            <h3 id="goalLearning">
+              تعلم اليوم
+            </h3>
+
+            <p id="goalText">
+              أكمل أول درس لك اليوم
+            </p>
+
           </div>
+
         </div>
 
-        <h3>ابدأ التعلم 📚</h3>
 
-        <div id="lessonList" class="lesson-list"></div>
+        <!-- ابدأ التعلم -->
+
+        <div class="section-heading">
+
+          <h3 id="startLearningText">
+            ابدأ التعلم 📚
+          </h3>
+
+          <button
+            type="button"
+            class="small-link"
+            onclick="showPage('lessonsPage')">
+            عرض الكل
+          </button>
+
+        </div>
+
+
+        <div
+          id="lessonList"
+          class="lesson-list">
+        </div>
+
+
+        <!-- HSK -->
+
+        <div class="home-feature-card">
+
+          <div>
+
+            <span>🇨🇳 HSK</span>
+
+            <h3>
+              اختبر مستواك في الصينية
+            </h3>
+
+            <p>
+              ابدأ من HSK 1 وتقدم خطوة بخطوة.
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            onclick="showPage('hskPage')">
+            HSK
+          </button>
+
+        </div>
+
+
+        <!-- الاختبارات -->
+
+        <div class="home-feature-card">
+
+          <div>
+
+            <span>📝 Tests</span>
+
+            <h3>
+              اختبارات متنوعة
+            </h3>
+
+            <p>
+              اختبر المفردات والقواعد والفهم.
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            onclick="showPage('testsPage')">
+            ابدأ
+          </button>
+
+        </div>
 
       </section>
 
-      <!-- الدروس -->
-      <section id="lessonsPage" class="page">
 
-        <h1>الدروس 📚</h1>
-        <p>تعلم خطوة بخطوة بدون ضغط.</p>
 
-        <div id="allLessons"></div>
+      <!-- =====================
+           LESSONS
+      ====================== -->
+
+      <section
+        id="lessonsPage"
+        class="page">
+
+        <div class="page-header">
+
+          <h1>
+            الدروس 📚
+          </h1>
+
+          <p>
+            تعلم خطوة بخطوة بدون ضغط.
+          </p>
+
+        </div>
+
+
+        <div
+          id="allLessons"
+          class="all-lessons">
+        </div>
 
       </section>
 
-      <!-- تفاصيل الدرس -->
-      <section id="lessonPage" class="page">
 
-        <button class="back-btn" onclick="showPage('lessonsPage')">
+
+      <!-- =====================
+           LESSON DETAILS
+      ====================== -->
+
+      <section
+        id="lessonPage"
+        class="page">
+
+        <button
+          class="back-btn"
+          type="button"
+          onclick="showPage('lessonsPage')">
+
           ← رجوع
+
         </button>
 
-        <div id="lessonContent"></div>
+
+        <div
+          id="lessonContent"
+          class="lesson-content">
+        </div>
 
       </section>
 
-      <!-- المراجعة -->
-      <section id="reviewPage" class="page">
 
-        <h1>المراجعة 🔄</h1>
-        <p>راجع الكلمات التي تحتاج إلى تدريب أكثر.</p>
 
-        <div id="reviewList"></div>
+      <!-- =====================
+           REVIEW
+      ====================== -->
+
+      <section
+        id="reviewPage"
+        class="page">
+
+        <div class="page-header">
+
+          <h1>
+            المراجعة 🔄
+          </h1>
+
+          <p>
+            راجع الكلمات التي تحتاج إلى تدريب أكثر.
+          </p>
+
+        </div>
+
+
+        <div
+          id="reviewList"
+          class="review-list">
+        </div>
 
       </section>
 
-      <!-- القصص -->
-      <section id="storiesPage" class="page">
 
-        <h1>قصص قصيرة 📖</h1>
-        <p>اقرأ واستمع وتعلم الكلمات في سياقها.</p>
 
-        <div id="storiesList"></div>
+      <!-- =====================
+           STORIES
+      ====================== -->
+
+      <section
+        id="storiesPage"
+        class="page">
+
+        <div class="page-header">
+
+          <h1>
+            قصص قصيرة 📖
+          </h1>
+
+          <p>
+            اقرأ واستمع وتعلم الكلمات في سياقها.
+          </p>
+
+        </div>
+
+
+        <div
+          id="storiesList"
+          class="stories-list">
+        </div>
 
       </section>
 
-      <!-- المحادثة -->
-      <section id="chatPage" class="page">
 
-        <h1>محادثة 🗣️</h1>
-        <p>تدرّب على الصينية في مواقف بسيطة.</p>
 
-        <div id="chatBox" class="chat-box">
+      <!-- =====================
+           CHAT
+      ====================== -->
+
+      <section
+        id="chatPage"
+        class="page">
+
+        <div class="page-header">
+
+          <h1>
+            محادثة 🗣️
+          </h1>
+
+          <p>
+            تدرب على الصينية في مواقف بسيطة.
+          </p>
+
+        </div>
+
+
+        <div
+          id="chatBox"
+          class="chat-box">
 
           <div class="bot-message">
+
             你好！👋
+
             <br>
+
             你好吗？
+
           </div>
 
         </div>
 
+
         <div class="chat-input">
+
           <input
             id="chatInput"
             type="text"
-            placeholder="اكتب إجابتك..."
-          >
+            autocomplete="off"
+            placeholder="اكتب إجابتك...">
 
-          <button onclick="sendMessage()">إرسال</button>
+          <button
+            type="button"
+            onclick="sendMessage()">
+
+            إرسال
+
+          </button>
+
         </div>
 
       </section>
 
-      <!-- الملف الشخصي -->
-      <section id="profilePage" class="page">
+
+
+      <!-- =====================
+           PROFILE
+      ====================== -->
+
+      <section
+        id="profilePage"
+        class="page">
 
         <div class="profile-header">
-          <div class="avatar">中</div>
-          <h1>Chinese Learner</h1>
-          <p>استمر في رحلتك! 🌟</p>
+
+          <div class="avatar">
+            中
+          </div>
+
+          <h1 id="profileName">
+            Chinese Learner
+          </h1>
+
+          <p>
+            استمر في رحلتك! 🌟
+          </p>
+
         </div>
 
-        <div class="profile-card">
-          <span>المستوى</span>
-          <strong id="profileLevel">1</strong>
-        </div>
 
         <div class="profile-card">
-          <span>XP</span>
-          <strong id="profileXP">0</strong>
+
+          <span>
+            المستوى
+          </span>
+
+          <strong id="profileLevel">
+            1
+          </strong>
+
         </div>
 
+
         <div class="profile-card">
-          <span>الدروس المكتملة</span>
-          <strong id="completedLessons">0</strong>
+
+          <span>
+            XP
+          </span>
+
+          <strong id="profileXP">
+            0
+          </strong>
+
+        </div>
+
+
+        <div class="profile-card">
+
+          <span>
+            الدروس المكتملة
+          </span>
+
+          <strong id="completedLessons">
+            0
+          </strong>
+
+        </div>
+
+
+        <div class="profile-card">
+
+          <span>
+            سلسلة التعلم 🔥
+          </span>
+
+          <strong id="profileStreak">
+            0
+          </strong>
+
+        </div>
+
+
+        <button
+          id="notificationBtn"
+          class="primary-btn"
+          type="button">
+
+          🔔 تفعيل الإشعارات
+
+        </button>
+
+
+        <button
+          id="logoutBtn"
+          class="secondary-btn"
+          type="button">
+
+          تسجيل الخروج
+
+        </button>
+
+      </section>
+
+
+
+      <!-- =====================
+           HSK PAGE
+           يتم ملؤها بواسطة JS
+      ====================== -->
+
+      <section
+        id="hskPage"
+        class="page">
+
+        <div class="page-header">
+
+          <h1>
+            مستويات HSK 🇨🇳
+          </h1>
+
+          <p>
+            اختر المستوى الذي تريد دراسته.
+          </p>
+
+        </div>
+
+
+        <div
+          id="hskContent"
+          class="hsk-content">
         </div>
 
       </section>
+
+
+
+      <!-- =====================
+           TESTS PAGE
+           يتم ملؤها بواسطة JS
+      ====================== -->
+
+      <section
+        id="testsPage"
+        class="page">
+
+        <div class="page-header">
+
+          <h1>
+            الاختبارات 📝
+          </h1>
+
+          <p>
+            اختبر معلوماتك وطور مستواك.
+          </p>
+
+        </div>
+
+
+        <div
+          id="testsContent"
+          class="tests-content">
+        </div>
+
+      </section>
+
 
     </main>
 
-    <!-- شريط التنقل -->
-    <nav class="bottom-nav">
 
-      <button onclick="showPage('homePage')" class="nav-btn active">
+
+    <!-- =========================
+         BOTTOM NAVIGATION
+    ========================== -->
+
+    <nav
+      class="bottom-nav"
+      aria-label="التنقل">
+
+      <button
+        onclick="showPage('homePage')"
+        class="nav-btn active"
+        type="button">
+
         <span>🏠</span>
-        <small>الرئيسية</small>
+
+        <small>
+          الرئيسية
+        </small>
+
       </button>
 
-      <button onclick="showPage('lessonsPage')" class="nav-btn">
+
+      <button
+        onclick="showPage('lessonsPage')"
+        class="nav-btn"
+        type="button">
+
         <span>📚</span>
-        <small>الدروس</small>
+
+        <small>
+          الدروس
+        </small>
+
       </button>
 
-      <button onclick="showPage('reviewPage')" class="nav-btn">
+
+      <button
+        onclick="showPage('reviewPage')"
+        class="nav-btn"
+        type="button">
+
         <span>🔄</span>
-        <small>مراجعة</small>
+
+        <small>
+          مراجعة
+        </small>
+
       </button>
 
-      <button onclick="showPage('storiesPage')" class="nav-btn">
-        <span>📖</span>
-        <small>قصص</small>
+
+      <button
+        onclick="showPage('testsPage')"
+        class="nav-btn"
+        type="button">
+
+        <span>📝</span>
+
+        <small>
+          اختبارات
+        </small>
+
       </button>
 
-      <button onclick="showPage('profilePage')" class="nav-btn">
+
+      <button
+        onclick="showPage('profilePage')"
+        class="nav-btn"
+        type="button">
+
         <span>👤</span>
-        <small>حسابي</small>
+
+        <small>
+          حسابي
+        </small>
+
       </button>
 
     </nav>
 
   </div>
+
+
+  <!-- =========================
+       JAVASCRIPT
+  ========================== -->
 
   <script src="script.js"></script>
 
